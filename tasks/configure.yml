@@ -33,7 +33,7 @@
     name: "run pretalx periodic"
     minute: "15,45"
     user: '{{ pretalx_user }}'
-    job: "export PATH='{{ pretalx_dir }}'/venv/bin:$PATH && cd {{ pretalx_dir }} && python3 -m pretalx runperiodic"
+    job: "export PATH='{{ pretalx_dir }}'/venv/bin:$PATH && cd {{ pretalx_dir }} && python3 -m pretalx runperiodic 2>&1 1>/dev/null"
 
 - name: Ensure pretalx backup dir exists and has right access rights
   file:
