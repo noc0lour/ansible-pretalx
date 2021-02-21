@@ -1,0 +1,32 @@
+---
+- name: Set OS dependent variables
+  include_vars: "{{ item }}"
+  vars:
+    loop_params:
+      files:
+        - "{{ ansible_facts.distribution }}_{{ ansible_facts.distribution_major_version }}.yml"
+        - "{{ ansible_facts.distribution }}.yml"
+        - "{{ ansible_facts.os_family }}_{{ ansible_facts.distribution_major_version }}.yml"
+        - "{{ ansible_facts.os_family }}.yml"
+        - default.yml
+      paths:
+        - vars
+  loop: "{{ query('first_found', loop_params) }}"
+  tags:
+    - always
+
+- name: OS is supported
+  assert:
+    that: pretalx_os_supported
+  tags:
+    - always
+
+
+- import_tasks: install.yml
+  tags: pretalx-install
+
+- import_tasks: database.yml
+  tags: pretalx-database
+
+- import_tasks: configure.yml
+  tags: pretalx-configure

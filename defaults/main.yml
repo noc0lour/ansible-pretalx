@@ -1,0 +1,32 @@
+---
+# Pretalx
+pretalx_user: pretalx
+pretalx_group: pretalx
+
+# File Dirs
+pretalx_config_dir: /etc/pretalx
+pretalx_dir: /var/pretalx
+
+
+# Postgres DB
+pretalx_db_name: pretalx
+pretalx_db_user: pretalx
+
+
+# Redis
+pretalx_redis_location: 127.0.0.1
+
+
+# Mail
+pretalx_mail_host: 127.0.0.1
+pretalx_mail_port: 587
+pretalx_mail_tls: True
+
+
+# System service gunicorn
+pretalx_gunicorn_workers: 5
+pretalx_gunicorn_maxrequest: 1200
+
+
+# Backup configuration
+pretalx_backup_dir: "{{ pretalx_dir }}/backup"

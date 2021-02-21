@@ -1,0 +1,92 @@
+---
+- name: Install required apt packages
+  apt:
+    name:
+      - git
+      - build-essential
+      - python-dev
+      - python3-venv
+      - python3
+      - python3-pip
+      - python3-dev
+      - libxml2-dev
+      - libxslt1-dev
+      - libffi-dev
+      - zlib1g-dev
+      - libssl-dev
+      - gettext
+      - libpq-dev
+      - libjpeg-dev
+      - libopenjp2-7-dev
+
+- name: Create group
+  group:
+    name: '{{ pretalx_group }}'
+    state: present
+
+- name: Create user
+  user:
+    name: '{{ pretalx_user }}'
+    group: '{{ pretalx_group }}'
+    groups: '{{ pretalx_user_groups | default(omit) }}'
+    state: present
+
+- name: Prepare directories
+  file:
+    path: '{{ pretalx_config_dir }}'
+    state: directory
+    owner: '{{ pretalx_user }}'
+    group: '{{ pretalx_group }}'
+
+- name: Prepare data directory
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ pretalx_user }}'
+    group: '{{ pretalx_group }}'
+    recurse: True
+  loop:
+    - '{{ pretalx_dir }}/data'
+    - '{{ pretalx_dir }}/data/media'
+
+- name: Add webserver user to group
+  user:
+    name: '{{ pretalx_webserver_user }}'
+    groups:
+      - '{{ pretalx_group }}'
+    state: present
+    append: yes
+  when: pretalx_webserver_user is defined
+
+- name:  Create config file
+  template:
+    src: pretalx.cfg.j2
+    dest: '{{ pretalx_config_dir }}/pretalx.cfg'
+    owner: '{{ pretalx_user }}'
+    group: '{{ pretalx_group }}'
+    mode: 0600
+  notify: "Restart pretalx serivces"
+
+- name: Install virtualenv via pip
+  pip:
+    name: virtualenv
+    executable: pip3
+
+- name: Install python dependencies
+  become: true
+  become_user: '{{ pretalx_user }}'
+  pip:
+    virtualenv: '{{ pretalx_dir }}/venv'
+    name:
+      - setuptools
+      - wheel
+      - pretalx[postgres,redis]
+      - gunicorn
+
+- name: Install specific version of urllib
+  become: true
+  become_user: '{{ pretalx_user }}'
+  pip:
+    virtualenv: '{{ pretalx_dir }}/venv'
+    name:
+      - urllib3==1.24

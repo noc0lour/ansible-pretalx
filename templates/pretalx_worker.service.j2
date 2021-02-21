@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Pretalx background worker
+After=network.target
+
+[Service]
+User={{ pretalx_user }}
+Group={{ pretalx_group }}
+Environment="VIRTUAL_ENV={{ pretalx_dir }}/venv"
+Environment="PATH={{ pretalx_dir }}/venv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart={{ pretalx_dir }}/venv/bin/celery -A pretalx.celery_app worker -l info
+WorkingDirectory={{ pretalx_dir }}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

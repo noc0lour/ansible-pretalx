@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Pretalx web service
+After=network.target
+Requires=pretalx_web.socket
+
+[Service]
+User={{ pretalx_user }}
+Group={{ pretalx_group }}
+Environment="VIRTUAL_ENV={{ pretalx_dir }}/venv"
+Environment="PATH=/venv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStartPre={{ pretalx_dir }}/venv/bin/python -m pretalx compilemessages
+ExecStartPre={{ pretalx_dir }}/venv/bin/python -m pretalx collectstatic --noinput
+ExecStartPre={{ pretalx_dir }}/venv/bin/python -m pretalx compress
+ExecStartPre={{ pretalx_dir }}/venv/bin/python -m pretalx migrate --noinput
+
+ExecStart={{ pretalx_dir }}/venv/bin/gunicorn pretalx.wsgi \
+                      --name pretalx --workers {{ pretalx_gunicorn_workers }} \
+                      --max-requests {{ pretalx_gunicorn_maxrequest }}  --max-requests-jitter 50 \
+                      --log-level=info
+WorkingDirectory={{ pretalx_dir }}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

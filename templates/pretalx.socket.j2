@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Pretalx socket
+
+[Socket]
+ListenStream=/run/pretalx.sock
+SocketUser=www-data
+SocketMode=600
+
+[Install]
+WantedBy=sockets.target

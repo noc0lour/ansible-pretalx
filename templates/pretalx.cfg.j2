@@ -1,0 +1,36 @@
+# {{ ansible_managed }}
+[filesystem]
+data = {{ pretalx_dir }}/data
+static = {{ pretalx_dir }}/static
+
+[site]
+debug = False
+url = {{ pretalx_instance_url }}
+
+
+[database]
+backend=postgresql
+name={{ pretalx_db_name }}
+user={{ pretalx_user }}
+password=
+host=
+
+[mail]
+from={{ pretalx_mail_address }}
+host={{ pretalx_mail_host }}
+{% if pretalx_mail_username is defined %}
+user={{ pretalx_mail_username }}
+{% endif %}
+{% if pretalx_mail_password is defined %}
+password={{ pretalx_mail_password }}
+{% endif %}
+port={{ pretalx_mail_port }}
+tls={{ pretalx_mail_tls| ternary('On','Off') }}
+
+[redis]
+location=redis://{{ pretalx_redis_location}}/0
+session=true
+
+[celery]
+backend=redis://{{ pretalx_redis_location}}/1
+broker=redis://{{ pretalx_redis_location}}/2
