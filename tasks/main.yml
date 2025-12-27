@@ -1,6 +1,6 @@
 ---
 - name: Set OS dependent variables
-  include_vars: "{{ item }}"
+  ansible.builtin.include_vars: "{{ item }}"
   vars:
     loop_params:
       files:
@@ -16,17 +16,16 @@
     - always
 
 - name: OS is supported
-  assert:
+  ansible.builtin.assert:
     that: pretalx_os_supported
   tags:
     - always
 
-
-- import_tasks: install.yml
+- ansible.builtin.import_tasks: install.yml
   tags: pretalx-install
 
-- import_tasks: database.yml
+- ansible.builtin.import_tasks: database.yml
   tags: pretalx-database
 
-- import_tasks: configure.yml
+- ansible.builtin.import_tasks: configure.yml
   tags: pretalx-configure

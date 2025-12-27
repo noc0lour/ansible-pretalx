@@ -1,6 +1,6 @@
 ---
 - name: Install required apt packages
-  apt:
+  ansible.builtin.apt:
     name:
       - git
       - build-essential
@@ -20,63 +20,63 @@
       - libopenjp2-7-dev
 
 - name: Create group
-  group:
-    name: '{{ pretalx_group }}'
+  ansible.builtin.group:
+    name: "{{ pretalx_group }}"
     state: present
 
 - name: Create user
-  user:
-    name: '{{ pretalx_user }}'
-    group: '{{ pretalx_group }}'
-    groups: '{{ pretalx_user_groups | default(omit) }}'
+  ansible.builtin.user:
+    name: "{{ pretalx_user }}"
+    group: "{{ pretalx_group }}"
+    groups: "{{ pretalx_user_groups | default(omit) }}"
     state: present
 
 - name: Prepare directories
-  file:
-    path: '{{ pretalx_config_dir }}'
+  ansible.builtin.file:
+    path: "{{ pretalx_config_dir }}"
     state: directory
-    owner: '{{ pretalx_user }}'
-    group: '{{ pretalx_group }}'
+    owner: "{{ pretalx_user }}"
+    group: "{{ pretalx_group }}"
 
 - name: Prepare data directory
-  file:
-    path: '{{ item }}'
+  ansible.builtin.file:
+    path: "{{ item }}"
     state: directory
-    owner: '{{ pretalx_user }}'
-    group: '{{ pretalx_group }}'
-    recurse: True
+    owner: "{{ pretalx_user }}"
+    group: "{{ pretalx_group }}"
+    recurse: true
   loop:
-    - '{{ pretalx_dir }}/data'
-    - '{{ pretalx_dir }}/data/media'
+    - "{{ pretalx_dir }}/data"
+    - "{{ pretalx_dir }}/data/media"
 
 - name: Add webserver user to group
-  user:
-    name: '{{ pretalx_webserver_user }}'
+  ansible.builtin.user:
+    name: "{{ pretalx_webserver_user }}"
     groups:
-      - '{{ pretalx_group }}'
+      - "{{ pretalx_group }}"
     state: present
-    append: yes
+    append: true
   when: pretalx_webserver_user is defined
 
-- name:  Create config file
-  template:
+- name: Create config file
+  ansible.builtin.template:
     src: pretalx.cfg.j2
-    dest: '{{ pretalx_config_dir }}/pretalx.cfg'
-    owner: '{{ pretalx_user }}'
-    group: '{{ pretalx_group }}'
-    mode: 0600
+    dest: "{{ pretalx_config_dir }}/pretalx.cfg"
+    owner: "{{ pretalx_user }}"
+    group: "{{ pretalx_group }}"
+    mode: "0600"
   notify: "Restart pretalx serivces"
 
 - name: Install virtualenv via pip
-  pip:
+  ansible.builtin.pip:
     name: virtualenv
     executable: pip3
 
 - name: Install python dependencies
   become: true
-  become_user: '{{ pretalx_user }}'
-  pip:
-    virtualenv: '{{ pretalx_dir }}/venv'
+  become_user: "{{ pretalx_user }}"
+  ansible.builtin.pip:
+    virtualenv: "{{ pretalx_dir }}/venv"
     name:
       - setuptools
       - wheel
@@ -85,8 +85,8 @@
 
 - name: Install specific version of urllib
   become: true
-  become_user: '{{ pretalx_user }}'
-  pip:
-    virtualenv: '{{ pretalx_dir }}/venv'
+  become_user: "{{ pretalx_user }}"
+  ansible.builtin.pip:
+    virtualenv: "{{ pretalx_dir }}/venv"
     name:
       - urllib3==1.24

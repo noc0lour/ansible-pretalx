@@ -1,52 +1,51 @@
 ---
 - name: Migrate Django
-  become_user: '{{ pretalx_user }}'
+  become_user: "{{ pretalx_user }}"
   become: true
-  command: '{{ pretalx_dir }}/venv/bin/python -m pretalx migrate'
+  ansible.builtin.command: "{{ pretalx_dir }}/venv/bin/python -m pretalx migrate"
   changed_when: false
 
 - name: Build Django
-  become_user: '{{ pretalx_user }}'
+  become_user: "{{ pretalx_user }}"
   become: true
-  command: '{{ pretalx_dir }}/venv/bin/python -m pretalx rebuild'
+  ansible.builtin.command: "{{ pretalx_dir }}/venv/bin/python -m pretalx rebuild"
   changed_when: false
 
 - name: Compress files
-  become_user: '{{ pretalx_user }}'
+  become_user: "{{ pretalx_user }}"
   become: true
-  command: '{{ pretalx_dir }}/venv/bin/python -m pretalx compress'
+  ansible.builtin.command: "{{ pretalx_dir }}/venv/bin/python -m pretalx compress"
   changed_when: false
 
-
 - name: Install systemd service files
-  template:
-    src: '{{ item.src }}'
-    dest: '{{ item.dest }}'
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
   notify: "Restart pretalx serivces"
   with_items:
-    - {src: "pretalx.socket.j2", dest: "/lib/systemd/system/pretalx_web.socket"}
-    - {src: "pretalx_web.service.j2",dest: "/lib/systemd/system/pretalx_web.service"}
-    - {src: "pretalx_worker.service.j2",dest: "/lib/systemd/system/pretalx_worker.service"}
+    - { src: "pretalx.socket.j2", dest: "/lib/systemd/system/pretalx_web.socket" }
+    - { src: "pretalx_web.service.j2", dest: "/lib/systemd/system/pretalx_web.service" }
+    - { src: "pretalx_worker.service.j2", dest: "/lib/systemd/system/pretalx_worker.service" }
 
 - name: Add management command in a crontab
-  cron:
+  ansible.builtin.cron:
     name: "run pretalx periodic"
     minute: "15,45"
-    user: '{{ pretalx_user }}'
+    user: "{{ pretalx_user }}"
     job: "export PATH='{{ pretalx_dir }}'/venv/bin:$PATH && cd {{ pretalx_dir }} && python3 -m pretalx runperiodic 2>&1 1>/dev/null"
 
 - name: Ensure pretalx backup dir exists and has right access rights
-  file:
+  ansible.builtin.file:
     path: "{{ pretalx_backup_dir }}"
     state: directory
     owner: "{{ pretalx_user }}"
     group: "{{ pretalx_group }}"
-    mode: 0770
-
+    mode: "0770"
 
 - name: Add daily backup command in a crontab
-  cron:
+  ansible.builtin.cron:
     name: "run pretalx backup"
     special_time: "daily"
     user: "{{ pretalx_user }}"
-    job: "export PATH='{{ pretalx_dir }}'/venv/bin:$PATH && cd {{ pretalx_dir }} && rsync -a {{ pretalx_dir }}/data {{ pretalx_backup_dir }}/ && pg_dump -U {{ pretalx_db_user }} {{ pretalx_db_name }} > {{ pretalx_backup_dir }}/pretalx.sql"
+    job: "export PATH='{{ pretalx_dir }}'/venv/bin:$PATH && cd {{ pretalx_dir }} && rsync -a {{ pretalx_dir }}/data {{ pretalx_backup_dir }}/ && pg_dump -U {{ pretalx_db_user
+      }} {{ pretalx_db_name }} > {{ pretalx_backup_dir }}/pretalx.sql"
